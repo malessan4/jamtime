@@ -2,7 +2,7 @@
 
 import { PrismaClient } from '@prisma/client';
 
-const prismaClientSingleton = () => {
+const prismaClientSingleton = () => {    // Inicialización limpia: Prisma leerá automáticamente el archivo .env gracias al schema
     return new PrismaClient();
 };
 

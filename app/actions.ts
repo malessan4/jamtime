@@ -13,9 +13,7 @@ export async function createGroup(name: string) {
 
     try {
         const group = await prisma.group.create({
-            data: {
-                name: name,
-            },
+            data: { name },
         });
         newGroupId = group.id;
     } catch (error) {
@@ -23,7 +21,6 @@ export async function createGroup(name: string) {
         return { success: false, error: 'No se pudo inicializar el grupo.' };
     }
 
-    // La redirección siempre debe ejecutarse fuera del bloque try/catch
     redirect(`/${newGroupId}`);
 }
 
@@ -40,7 +37,6 @@ export async function createUser(name: string, color: string, groupId: string) {
             },
         });
 
-        // Forzamos a Next.js a limpiar la caché de este grupo específico para mostrar al nuevo usuario
         revalidatePath(`/${groupId}`);
         return { success: true, user };
     } catch (error) {
@@ -51,6 +47,7 @@ export async function createUser(name: string, color: string, groupId: string) {
 
 /**
  * Inserta un bloque de disponibilidad horaria asociado a un integrante.
+ * Corregido: Ahora retorna el ID del registro creado.
  */
 export async function addAvailability(
     userId: string,
@@ -59,7 +56,7 @@ export async function addAvailability(
     endTime: Date
 ) {
     try {
-        await prisma.availabilitySlot.create({
+        const slot = await prisma.availabilitySlot.create({
             data: {
                 userId,
                 startTime,
@@ -67,12 +64,28 @@ export async function addAvailability(
             },
         });
 
-        // Revalidamos la ruta dinámica en el servidor para propagar los nuevos horarios pintados
         revalidatePath(`/${groupId}`);
-        return { success: true };
+        return { success: true, id: slot.id };
     } catch (error) {
         console.error('Error crítico al agregar disponibilidad:', error);
         return { success: false, error: 'No se pudo almacenar la franja horaria.' };
+    }
+}
+
+/**
+ * Elimina de forma permanente un bloque de disponibilidad.
+ */
+export async function deleteAvailability(slotId: string, groupId: string) {
+    try {
+        await prisma.availabilitySlot.delete({
+            where: { id: slotId },
+        });
+
+        revalidatePath(`/${groupId}`);
+        return { success: true };
+    } catch (error) {
+        console.error('Error crítico al eliminar disponibilidad:', error);
+        return { success: false, error: 'No se pudo remover la franja horaria.' };
     }
 }
 

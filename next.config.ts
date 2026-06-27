@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Genera un build optimizado que copia solo los archivos necesarios de node_modules
+  output: "standalone",
 };
-
 export default nextConfig;

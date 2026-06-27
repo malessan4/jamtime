@@ -26,10 +26,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // Agregamos suppressHydrationWarning a la etiqueta html para silenciar 
-    // conflictos con extensiones del navegador como LanguageTool o Dark Reader.
     <html lang="es" suppressHydrationWarning>
-      <body className={inter.className}>{children}</body>
+      {/* Agregamos suppressHydrationWarning también aquí para Grammarly */}
+      <body className={inter.className} suppressHydrationWarning>
+        {children}
+      </body>
     </html>
   );
 }

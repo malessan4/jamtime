@@ -15,7 +15,15 @@ interface GroupClientProps {
     groupId: string;
     groupName: string;
     dbUsers: User[];
-    serializedEvents: { title: string; start: string; end: string; color: string }[];
+    // 1. Actualizamos la interfaz para recibir los nuevos campos del servidor
+    serializedEvents: {
+        id: string;
+        userId: string;
+        title: string;
+        start: string;
+        end: string;
+        color: string
+    }[];
 }
 
 const PRESET_COLORS = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
@@ -28,7 +36,6 @@ export default function GroupClient({ groupId, groupName, dbUsers, serializedEve
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
-        // Buscamos si este usuario ya tiene una sesión guardada localmente para este grupo
         const savedUserId = localStorage.getItem(`jamtime_user_${groupId}`);
         if (savedUserId) {
             const match = dbUsers.find(u => u.id === savedUserId);
@@ -53,8 +60,10 @@ export default function GroupClient({ groupId, groupName, dbUsers, serializedEve
         setIsSubmitting(false);
     };
 
-    // Rehidratamos las strings ISO de las fechas a objetos Date reales para react-big-calendar
+    // 2. CORRECCIÓN VITAL: Ahora pasamos el 'id' y el 'userId' intactos hacia el componente visual
     const parsedEvents = serializedEvents.map(e => ({
+        id: e.id,
+        userId: e.userId,
         title: e.title,
         color: e.color,
         start: new Date(e.start),

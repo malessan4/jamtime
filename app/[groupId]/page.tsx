@@ -13,13 +13,14 @@ export default async function GroupPage({ params }: PageProps) {
     const res = await getGroupData(groupId);
 
     if (!res.success || !res.group) {
-        return notFound();
+        notFound();
     }
 
-    // Mapeamos y aplanamos todas las disponibilidades de todos los usuarios
-    // Convirtiendo las fechas nativas a strings ISO serializables
+    // Mapeamos incluyendo los identificadores únicos de cada franja y usuario
     const serializedEvents = res.group.users.flatMap((user) =>
         user.availabilitySlots.map((slot) => ({
+            id: slot.id,
+            userId: user.id,
             title: user.name,
             color: user.color,
             start: slot.startTime.toISOString(),

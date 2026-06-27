@@ -2,25 +2,23 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { createGroup } from './actions';
 
 export default function Home() {
   const [groupName, setGroupName] = useState('');
   const [isCreating, setIsCreating] = useState(false);
-  const router = useRouter();
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!groupName.trim() || isCreating) return;
 
     setIsCreating(true);
+
+    // Al ejecutar esto, el servidor se encargará de forzar la redirección
     const res = await createGroup(groupName.trim());
 
-    if (res.success && res.group) {
-      // Redirigimos automáticamente a la ruta dinámica del grupo recién creado
-      router.push(`/${res.group.id}`);
-    } else {
+    // Si el código llega hasta aquí, significa que hubo un error y la redirección no ocurrió
+    if (res && !res.success) {
       alert('Ocurrió un error al intentar inicializar el grupo.');
       setIsCreating(false);
     }

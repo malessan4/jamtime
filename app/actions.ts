@@ -3,22 +3,28 @@
 
 import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 
 /**
- * Crea un nuevo grupo (Banda) en la base de datos.
+ * Crea un nuevo grupo (Banda) en la base de datos y redirige automáticamente.
  */
 export async function createGroup(name: string) {
+    let newGroupId: string;
+
     try {
         const group = await prisma.group.create({
             data: {
                 name: name,
             },
         });
-        return { success: true, group };
+        newGroupId = group.id;
     } catch (error) {
         console.error('Error crítico al crear el grupo:', error);
         return { success: false, error: 'No se pudo inicializar el grupo.' };
     }
+
+    // La redirección siempre debe ejecutarse fuera del bloque try/catch
+    redirect(`/${newGroupId}`);
 }
 
 /**

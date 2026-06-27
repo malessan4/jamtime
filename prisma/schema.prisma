@@ -13,8 +13,8 @@ model Group {
   name      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  users User[]
+  
+  users     User[]
 }
 
 model User {
@@ -38,7 +38,7 @@ model AvailabilitySlot {
   endTime   DateTime
   createdAt DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([startTime, endTime])

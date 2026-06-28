@@ -29,6 +29,9 @@ model User {
   availabilitySlots AvailabilitySlot[]
 
   @@index([groupId])
+  
+  // NUEVO: Restricción única compuesta para evitar colores duplicados por banda
+  @@unique([groupId, color])
 }
 
 model AvailabilitySlot {

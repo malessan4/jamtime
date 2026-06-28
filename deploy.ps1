@@ -5,15 +5,20 @@ Write-Host "Iniciando despliegue de JamTime (Produccion)..." -ForegroundColor Cy
 if (Test-Path .env) {
     Get-Content .env | ForEach-Object {
         $line = $_.Trim()
+        # Ignoramos lineas vacias o comentarios
         if ($line -and !$line.StartsWith("#") -and $line.Contains("=")) {
             $key, $value = $line.Split("=", 2)
-            [System.Environment]::SetEnvironmentVariable($key.Trim(), $value.Trim(), "Process")
+            
+            # Limpiamos espacios y eliminamos comillas dobles o simples
+            $cleanKey = $key.Trim()
+            $cleanValue = $value.Trim().Trim("'", '"')
+            
+            [System.Environment]::SetEnvironmentVariable($cleanKey, $cleanValue, "Process")
         }
     }
 }
 
 Write-Host "Sincronizando esquema de base de datos con Supabase..." -ForegroundColor Yellow
-# Corrección: En Prisma 7 ya no se usa el flag --skip-generate
 npx prisma db push
 if ($LASTEXITCODE -ne 0) { 
     Write-Host "Error al sincronizar la base de datos. Abortando despliegue." -ForegroundColor Red
@@ -23,7 +28,7 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host "Compilando imagen de Docker..." -ForegroundColor Yellow
 docker build -t jamtime-app .
 if ($LASTEXITCODE -ne 0) { 
-    Write-Host "Error en Docker Build. Asegurate de que Docker Desktop este abierto y corriendo." -ForegroundColor Red
+    Write-Host "Error en Docker Build. Asegurate de que Docker Desktop este abierto." -ForegroundColor Red
     exit 
 }
 

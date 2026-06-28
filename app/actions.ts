@@ -26,9 +26,23 @@ export async function createGroup(name: string) {
 
 /**
  * Registra un nuevo integrante con su respectivo color dentro de un grupo.
+ * CORREGIDO: Validación de color duplicado antes de insertar.
  */
 export async function createUser(name: string, color: string, groupId: string) {
     try {
+        // 1. Verificamos si alguien más ya tomó este color en la banda
+        const existingColor = await prisma.user.findFirst({
+            where: {
+                groupId: groupId,
+                color: color,
+            },
+        });
+
+        if (existingColor) {
+            return { success: false, error: 'Este color ya fue elegido por otro integrante de la banda.' };
+        }
+
+        // 2. Si el color está libre, creamos el usuario
         const user = await prisma.user.create({
             data: {
                 name,
@@ -47,7 +61,6 @@ export async function createUser(name: string, color: string, groupId: string) {
 
 /**
  * Inserta un bloque de disponibilidad horaria asociado a un integrante.
- * Corregido: Ahora retorna el ID del registro creado.
  */
 export async function addAvailability(
     userId: string,

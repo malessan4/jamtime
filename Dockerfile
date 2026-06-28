@@ -22,8 +22,10 @@ COPY . .
 
 # Desactivamos la telemetría de Next.js durante la compilación
 ENV NEXT_TELEMETRY_DISABLED=1
-# Inyectamos una URL ficticia obligatoria para que Prisma compile los tipos sin romper el build
+
+# Inyectamos URLs ficticias OBLIGATORIAS para que Prisma compile los tipos sin romper el build
 ENV DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder"
+ENV DIRECT_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder"
 
 # Generamos el cliente de Prisma adaptado a la versión 7 y compilamos Next.js
 RUN npx prisma generate

@@ -11,9 +11,12 @@ import { redirect } from 'next/navigation';
 export async function createGroup(name: string) {
     let newGroupId: string;
 
+    // Genera un código alfanumérico aleatorio de 6 caracteres (ej: A9F3K1)
+    const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+
     try {
         const group = await prisma.group.create({
-            data: { name },
+            data: { name, roomCode },
         });
         newGroupId = group.id;
     } catch (error) {
@@ -23,6 +26,25 @@ export async function createGroup(name: string) {
 
     redirect(`/${newGroupId}`);
 }
+/**
+ * Busca un grupo por su código de sala.
+ */
+export async function joinGroupByCode(code: string) {
+    try {
+        const group = await prisma.group.findUnique({
+            where: { roomCode: code.toUpperCase() }
+        });
+
+        if (!group) {
+            return { success: false, error: 'Código de sala inválido o no existe.' };
+        }
+
+        return { success: true, groupId: group.id };
+    } catch (error) {
+        return { success: false, error: 'Error al buscar la sala.' };
+    }
+}
+
 
 /**
  * Registra un nuevo integrante con su respectivo color dentro de un grupo.
@@ -56,6 +78,31 @@ export async function createUser(name: string, color: string, groupId: string) {
     } catch (error) {
         console.error('Error crítico al crear el usuario:', error);
         return { success: false, error: 'No se pudo registrar el usuario.' };
+    }
+}
+
+/**
+ * Permite a un usuario cambiar su color si está disponible.
+ */
+export async function changeUserColor(userId: string, groupId: string, newColor: string) {
+    try {
+        const existingColor = await prisma.user.findFirst({
+            where: { groupId, color: newColor },
+        });
+
+        if (existingColor) {
+            return { success: false, error: 'Ese color acaba de ser tomado por otro integrante.' };
+        }
+
+        await prisma.user.update({
+            where: { id: userId },
+            data: { color: newColor }
+        });
+
+        revalidatePath(`/${groupId}`);
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: 'Error interno al cambiar el color.' };
     }
 }
 

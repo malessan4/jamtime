@@ -38,6 +38,7 @@ export default async function GroupPage({ params }: PageProps) {
         <GroupClient
             groupId={res.group.id}
             groupName={res.group.name}
+            roomCode={res.group.roomCode} // PASAMOS EL CÓDIGO AL CLIENTE
             dbUsers={dbUsers}
             serializedEvents={serializedEvents}
         />

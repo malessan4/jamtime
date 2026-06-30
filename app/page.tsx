@@ -2,61 +2,92 @@
 'use client';
 
 import React, { useState } from 'react';
-import { createGroup } from './actions';
+import { createGroup, joinGroupByCode } from './actions';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
-  const [groupName, setGroupName] = useState('');
+  const router = useRouter();
+  const [newGroupName, setNewGroupName] = useState('');
+  const [roomCode, setRoomCode] = useState('');
+
   const [isCreating, setIsCreating] = useState(false);
+  const [isJoining, setIsJoining] = useState(false);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!groupName.trim() || isCreating) return;
-
+    if (!newGroupName.trim()) return;
     setIsCreating(true);
+    // El Server Action maneja la redirección internamente
+    await createGroup(newGroupName);
+  };
 
-    // Al ejecutar esto, el servidor se encargará de forzar la redirección
-    const res = await createGroup(groupName.trim());
+  const handleJoin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!roomCode.trim()) return;
+    setIsJoining(true);
 
-    // Si el código llega hasta aquí, significa que hubo un error y la redirección no ocurrió
-    if (res && !res.success) {
-      alert('Ocurrió un error al intentar inicializar el grupo.');
-      setIsCreating(false);
+    const res = await joinGroupByCode(roomCode);
+    if (res.success && res.groupId) {
+      router.push(`/${res.groupId}`);
+    } else {
+      alert(res.error);
+      setIsJoining(false);
     }
   };
 
   return (
-    <div className="h-screen w-screen flex items-center justify-center bg-slate-900 text-white p-4">
-      <div className="max-w-md w-full bg-slate-800 p-8 rounded-2xl shadow-2xl border border-slate-700">
-        <div className="text-center mb-6">
-          <span className="text-4xl">🎸</span>
-          <h1 className="text-3xl font-extrabold mt-3 tracking-tight">JamTime</h1>
-          <p className="text-slate-400 text-sm mt-1">Coordina los ensayos de tu banda sin vueltas.</p>
+    <main className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
+        <div className="bg-slate-900 p-6 text-center">
+          <h1 className="text-3xl font-bold text-white mb-2">JamTime</h1>
+          <p className="text-slate-400 text-sm">Sincroniza los horarios de tu banda</p>
         </div>
 
-        <form onSubmit={handleCreate} className="space-y-4">
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
-              Nombre de la Banda o Grupo
-            </label>
+        <div className="p-6 space-y-8">
+          {/* Formulario 1: Unirse con Código */}
+          <form onSubmit={handleJoin} className="space-y-4">
+            <h2 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Ya tengo una banda</h2>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Código de 6 letras"
+                value={roomCode}
+                onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
+                maxLength={6}
+                className="flex-1 px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 text-center font-mono font-bold text-lg text-black uppercase"
+              />
+              <button
+                type="submit"
+                disabled={isJoining || roomCode.length < 5}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 rounded-xl transition-all disabled:opacity-50"
+              >
+                {isJoining ? '...' : 'Entrar'}
+              </button>
+            </div>
+          </form>
+
+          <div className="border-t border-slate-100"></div>
+
+          {/* Formulario 2: Crear Banda */}
+          <form onSubmit={handleCreate} className="space-y-4">
+            <h2 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Crear nueva banda</h2>
             <input
               type="text"
-              required
-              placeholder="Ej. Mi Banda de Rock / Ensayo de Junio"
-              value={groupName}
-              onChange={(e) => setGroupName(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+              placeholder="Nombre del proyecto"
+              value={newGroupName}
+              onChange={(e) => setNewGroupName(e.target.value)}
+              className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-900 text-black"
             />
-          </div>
-
-          <button
-            type="submit"
-            disabled={isCreating}
-            className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-all transform active:scale-95 disabled:opacity-50"
-          >
-            {isCreating ? 'Inicializando espacio...' : 'Crear Calendario Compartido'}
-          </button>
-        </form>
+            <button
+              type="submit"
+              disabled={isCreating || !newGroupName.trim()}
+              className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-all disabled:opacity-50"
+            >
+              {isCreating ? 'Iniciando...' : 'Crear Proyecto'}
+            </button>
+          </form>
+        </div>
       </div>
-    </div>
+    </main>
   );
 }

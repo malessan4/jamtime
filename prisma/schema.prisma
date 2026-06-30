@@ -11,6 +11,7 @@ datasource db {
 model Group {
   id        String   @id @default(uuid())
   name      String
+  roomCode String? @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   

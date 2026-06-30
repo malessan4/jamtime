@@ -20,6 +20,16 @@ export const metadata: Metadata = {
   description: "Encuentra el horario perfecto para los ensayos de tu proyecto musical sin fricciones ni mensajes perdidos.",
   applicationName: "JamTime",
   themeColor: "#0f172a", // Color slate-900 para que coincida con la cabecera
+
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" }, // Fallback para navegadores antiguos
+      { url: "/icon.png", type: "image/png", sizes: "32x32" }, // Pestañas estándar
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }, // Para iOS/Safari
+    ],
+  },
 };
 
 export default function RootLayout({
